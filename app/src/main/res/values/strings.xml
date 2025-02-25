@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">WinterNotesFirebase</string>
+
+    <string name="winter_notes">WinterNotesFirebase</string>
+    <string name="search_notes">Search Notes</string>
+    <string name="date_time">2024-01-24 11:30:00</string>
+    <string name="miscellaneous">Miscellaneous</string>
+    <string name="pick_color">Pick Color</string>
+    <string name="add_image">Add Image</string>
+    <string name="add_url">Add URL</string>
+    <string name="enter_url">Enter URL</string>
+    <string name="add">Add</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete_note">Delete Note</string>
+    <string name="select_category">Select Category</string>
+    <string name="add_category">Add Category</string>
+    <string name="are_you_sure_to_delete_this_note">Are you sure to delete this note?</string>
+
+    <string-array name="notes_categories">
+        <item>Personal</item>
+        <item>Work</item>
+        <item>Learning</item>
+        <item>Health</item>
+    </string-array>
+
+</resources>

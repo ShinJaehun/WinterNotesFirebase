@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/layout_note"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/background_note"
+    android:layout_marginStart="@dimen/_12sdp"
+    android:layout_marginTop="@dimen/_12sdp"
+    android:orientation="vertical">
+
+<!--    <com.makeramen.roundedimageview.RoundedImageView-->
+<!--        android:id="@+id/riv_imagePreview"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:maxHeight="@dimen/_100sdp"-->
+<!--        android:scaleType="centerCrop"-->
+<!--        android:adjustViewBounds="true"-->
+<!--        android:visibility="gone"-->
+<!--        app:riv_corner_radius_top_left="@dimen/_10sdp"-->
+<!--        app:riv_corner_radius_top_right="@dimen/_10sdp"/>-->
+
+    <ImageView
+        android:id="@+id/riv_imagePreview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxHeight="@dimen/_100sdp"
+        android:scaleType="centerCrop"
+        android:adjustViewBounds="true"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/tv_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/_8sdp"
+        android:layout_marginTop="@dimen/_8sdp"
+        android:fontFamily="@font/ubuntu_bold"
+        android:includeFontPadding="false"
+        android:textColor="@color/white"
+        android:textSize="@dimen/_13ssp"/>
+    <TextView
+        android:id="@+id/tv_subtitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/_8sdp"
+        android:layout_marginVertical="@dimen/_4sdp"
+        android:fontFamily="@font/ubuntu_regular"
+        android:includeFontPadding="false"
+        android:textColor="@color/colorNoteSubtitleText"
+        android:textSize="@dimen/_12ssp"/>
+    <TextView
+        android:id="@+id/tv_dateTime"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/_8sdp"
+        android:layout_marginBottom="@dimen/_8sdp"
+        android:fontFamily="@font/ubuntu_regular"
+        android:includeFontPadding="false"
+        android:textColor="@color/colorNoteSubtitleText"
+        android:textSize="@dimen/_7ssp"/>
+
+</LinearLayout>
