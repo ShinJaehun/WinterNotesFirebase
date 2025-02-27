@@ -10,7 +10,6 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
-
 internal suspend fun <T> awaitTaskResult(task: Task<T>): T = suspendCoroutine { continuation ->
     task.addOnCompleteListener { task ->
         if (task.isSuccessful) {

@@ -2,6 +2,7 @@ package com.shinjaehun.winternotesfirebase.model
 
 import com.google.firebase.auth.FirebaseAuth
 import com.shinjaehun.winternotesfirebase.common.Result
+import com.shinjaehun.winternotesfirebase.common.awaitTaskResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -17,7 +18,7 @@ class FirebaseUserRepoImpl(
             Result.build {
                 User(
                     firebaseUser.uid,
-                    firebaseUser.email
+                    firebaseUser.email!!
                 )
             }
         }
@@ -32,7 +33,8 @@ class FirebaseUserRepoImpl(
     override suspend fun signInUser(email: String, password: String): Result<Exception, Unit>
         = withContext(Dispatchers.IO) {
         try {
-
+            awaitTaskResult(auth.signInWithEmailAndPassword(email, password))
+            Result.build {  }
         } catch (e: Exception) {
             Result.build { throw e }
         }
