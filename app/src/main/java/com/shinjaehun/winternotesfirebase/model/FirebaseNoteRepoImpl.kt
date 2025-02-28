@@ -26,13 +26,14 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import java.util.UUID
 
 private const val TAG = "FirebaseNoteRepoImpl"
 
 class FirebaseNoteRepoImpl(
     val firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance(),
     val remote: FirebaseFirestore = FirebaseFirestore.getInstance(),
-    val storageReference: StorageReference = FirebaseStorage.getInstance().reference,
+    val storage: FirebaseStorage = FirebaseStorage.getInstance()
 ): INoteRepository {
     override suspend fun getNotes(): Result<Exception, List<Note>> {
         return try {
@@ -77,11 +78,23 @@ class FirebaseNoteRepoImpl(
     }
 
     override suspend fun deleteNote(note: Note): Result<Exception, Unit> = Result.build {
+        Log.i(TAG, "note to delete: $note")
+        if(!note.imagePath.isNullOrEmpty()) {
+            storage.getReferenceFromUrl(note.imagePath)
+                .delete()
+                .await()
+        }
         awaitTaskCompletable(
             remote.collection(COLLECTION_NAME)
                 .document(note.dateTime + note.creator!!.uid)
                 .delete()
         )
+//        awaitTaskCompletable(
+//            remote.collection(COLLECTION_NAME)
+//                .document(note.dateTime + note.creator!!.uid)
+//                .delete()
+//                .await()
+//            )
     }
 
     override suspend fun insertOrUpdateNote(note: Note, imageUri: Uri?): Result<Exception, Unit> {
@@ -134,9 +147,13 @@ class FirebaseNoteRepoImpl(
             if (imageUri == null) {
                 val updateNote = note.copy(creator = user)
                 Log.i(TAG, "note to insert: $updateNote")
+                Log.i(TAG, "current user's UID: ${updateNote.creator!!.uid}")
+                Log.i(TAG, "document id: ${updateNote.dateTime + updateNote.creator.uid}")
+                Log.i(TAG, "document id from user?: ${updateNote.dateTime + user!!.uid}")
+
                 awaitTaskCompletable(
                     remote.collection(COLLECTION_NAME)
-                        .document(updateNote.dateTime + updateNote.creator!!.uid)
+                        .document(updateNote.dateTime + updateNote.creator.uid)
                         .set(updateNote.toFirebaseNote)
                 )
                 Result.build { Unit }
@@ -160,7 +177,7 @@ class FirebaseNoteRepoImpl(
 //                    .set(updateNote.toFirebaseNote)
 
                 // 근데 이게 될 줄은 몰랐는데... await() 이게 끝까지 기다려주는 역할을 하고 있음!
-                val uri = storageReference.child("winternotesfirebase_images/${imageUri.lastPathSegment}")
+                val uri = storage.reference.child("winternotesfirebase_images/${imageUri.lastPathSegment + '_' + UUID.randomUUID().toString()}.jpg")
                     .putFile(imageUri)
                     .await()
                     .storage
@@ -170,10 +187,21 @@ class FirebaseNoteRepoImpl(
                 Log.i(TAG, "uri of this: $uri")
                 val updateNote = note.copy(creator = user, imagePath = uri.toString())
                 Log.i(TAG, "note to insert: $updateNote")
-                remote.collection(COLLECTION_NAME)
-                    .document(updateNote.dateTime + updateNote.creator!!.uid)
-                    .set(updateNote.toFirebaseNote)
 
+                // 이게 좀 놀라운 일인데...
+                // 현재 로그인한 사용자 uid: dH4oX7lbzqPWkkOWNdRrU5fXBkx1
+                // 그럼 당연히 dH4oX7lbzqPWkkOWNdRrU5fXBkx1
+                Log.i(TAG, "current user's UID: ${updateNote.creator!!.uid}")
+
+                // 그런데 이 결과는
+                // collection id: 2025 February 28, Friday, 07:22 AMdH4oX7lbzqPWkkOWNdRrU5fXBkx1
+                // AMdH4oX7lbzqPWkkOWNdRrU5fXBkx1 얘는 어디서 온걸까???
+                Log.i(TAG, "document id: ${updateNote.dateTime + updateNote.creator.uid}")
+                awaitTaskCompletable(
+                    remote.collection(COLLECTION_NAME)
+                        .document(updateNote.dateTime + updateNote.creator.uid)
+                        .set(updateNote.toFirebaseNote)
+                )
                 Result.build { Unit }
             }
         } catch (e: Exception) {

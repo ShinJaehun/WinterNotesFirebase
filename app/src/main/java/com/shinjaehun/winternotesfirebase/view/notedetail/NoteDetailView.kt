@@ -347,10 +347,9 @@ class NoteDetailView: Fragment() {
         viewModel.deleted.observe(
             viewLifecycleOwner,
             Observer {
-                viewModel.handleEvent(
-                    NoteDetailEvent.OnDeleteClick
-                )
-                findNavController().navigate(R.id.noteListView)
+                if(it) {
+                    findNavController().navigate(R.id.noteListView)
+                }
             }
         )
     }
