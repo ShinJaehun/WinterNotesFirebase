@@ -89,67 +89,32 @@ class FirebaseNoteRepoImpl(
                 .document(note.dateTime + note.creator!!.uid)
                 .delete()
         )
-//        awaitTaskCompletable(
-//            remote.collection(COLLECTION_NAME)
-//                .document(note.dateTime + note.creator!!.uid)
-//                .delete()
-//                .await()
-//            )
     }
 
     override suspend fun insertOrUpdateNote(note: Note, imageUri: Uri?): Result<Exception, Unit> {
         val user = getActiveUser()
 
         return try {
-            // 기본적인 처리 방법이지...
-            // uploadImageFile()을 따로 처리하려면 이 방법 권장
-//            val updateNote = note.copy(creator = user)
-//            Log.i(TAG, "note to insert: $updateNote")
-//            awaitTaskCompletable(
-//                remote.collection(COLLECTION_NAME)
-//                    .document(updateNote.dateTime + updateNote.creator!!.uid)
-//                    .set(updateNote.toFirebaseNote)
-//            )
-//            Result.build { Unit }
-
-//            if (imageUri == null) {
-//                val updateNote = note.copy(creator = user)
-//                Log.i(TAG, "note to insert: $updateNote")
-//                awaitTaskCompletable(
-//                    remote.collection(COLLECTION_NAME)
-//                        .document(updateNote.dateTime + updateNote.creator!!.uid)
-//                        .set(updateNote.toFirebaseNote)
-//                )
-//                Result.build { Unit }
-//            } else {
-//                // 여기서 이미지 처리하는 게 맞다고 생각했는데
-//                // 이미지 용량이 커서 그런가?
-//                // 이미지 업로드 전에 noteList 갱신이 먼저 이루어짐.... 확실히 안되는 거 맞음!!
-//                // 지금 생각해보면 task를 중간에 끊어서 await()를 넣으면 가능할지도 모르겠다...
-//                awaitTaskCompletable(
-//                    storageReference.child("winternotesfirebase_images/${imageUri.lastPathSegment}")
-//                        .putFile(imageUri)
-//                        .addOnSuccessListener { task ->
-//                            task.storage.downloadUrl.addOnSuccessListener {
-//                                Log.i(TAG, "download url: ${it.toString()}")
-//                                val updateNote = note.copy(creator = user, imagePath = it.toString())
-//                                Log.i(TAG, "note to insert: $updateNote")
-//                                remote.collection(COLLECTION_NAME)
-//                                    .document(updateNote.dateTime + updateNote.creator!!.uid)
-//                                    .set(updateNote.toFirebaseNote)
-//                            }
-//                        }
-//                )
-//
-//                Result.build { Unit }
-//            }
-
-            if (imageUri == null) {
+             if (imageUri == null) {
                 val updateNote = note.copy(creator = user)
                 Log.i(TAG, "note to insert: $updateNote")
                 Log.i(TAG, "current user's UID: ${updateNote.creator!!.uid}")
                 Log.i(TAG, "document id: ${updateNote.dateTime + updateNote.creator.uid}")
                 Log.i(TAG, "document id from user?: ${updateNote.dateTime + user!!.uid}")
+
+                // 이미지가 원래 있었는데
+                // 이미지 삭제 버튼 클릭 후 저장 -> 어떻게 이미지를 삭제하지?
+                val task = awaitTaskResult(
+                    remote.collection(COLLECTION_NAME)
+                        .document(updateNote.dateTime + updateNote.creator.uid)
+                        .get()
+                )
+                val beforeUpdateNote = task.toObject(FirebaseNote::class.java)?.toNote
+                if(!beforeUpdateNote?.imagePath.isNullOrEmpty()) {
+                    storage.getReferenceFromUrl(beforeUpdateNote!!.imagePath.toString())
+                        .delete()
+                        .await()
+                }
 
                 awaitTaskCompletable(
                     remote.collection(COLLECTION_NAME)
@@ -158,23 +123,13 @@ class FirebaseNoteRepoImpl(
                 )
                 Result.build { Unit }
             } else {
-//                var uri: Uri? = null
-//                coroutineScope {
-//                    async {
-//                        uri = storageReference.child("winternotesfirebase_images/${imageUri.lastPathSegment}")
-//                            .putFile(imageUri)
-//                            .await()
-//                            .storage
-//                            .downloadUrl
-//                            .await()
-//                    }
-//                }.join() //나름 이것 때문에 된 걸로 알고 있었는데...
-//                Log.i(TAG, "uri of this: $uri")
-//                val updateNote = note.copy(creator = user, imagePath = uri.toString())
-//                Log.i(TAG, "note to insert: $updateNote")
-//                remote.collection(COLLECTION_NAME)
-//                    .document(updateNote.dateTime + updateNote.creator!!.uid)
-//                    .set(updateNote.toFirebaseNote)
+                // 이미지 교체 처리
+                // 그냥 여기에 note.imagePath가 기존에 존재한다면... 그거 삭제하면 될꺼 아닌가?
+                if(!note.imagePath.isNullOrEmpty()) {
+                    storage.getReferenceFromUrl(note.imagePath)
+                        .delete()
+                        .await()
+                }
 
                 // 근데 이게 될 줄은 몰랐는데... await() 이게 끝까지 기다려주는 역할을 하고 있음!
                 val uri = storage.reference.child("winternotesfirebase_images/${imageUri.lastPathSegment + '_' + UUID.randomUUID().toString()}.jpg")
